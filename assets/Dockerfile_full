@@ -13,11 +13,11 @@ ARG   ANSIBLE_VERSION \
       TFLINT_VERSION \
       YQ_VERSION
 
-RUN   useradd -m -u 1001 -d /home/vsts vsts_VSTSContainer
+#RUN   useradd -m -u 1001 -d /home/vsts vsts_VSTSContainer
 #      groupadd azure_pipelines_sudo && \
 #      usermod -a -G azure_pipelines_sudo vsts_VSTSContainer
 
-COPY  .terraform.lock.hcl ansible_collections.yml provider.tf /home/vsts/
+COPY  .terraform.lock.hcl ansible_collections.yml provider.tf /root/
 
 # Install dependencies.
 RUN   apt-get update \
@@ -83,7 +83,7 @@ RUN   curl -sL https://deb.nodesource.com/setup_20.x | bash - && \
       apt-get install -y nodejs
 
 # sudo for all
-RUN   echo '%azure_pipelines_sudo ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
+#RUN   echo '%azure_pipelines_sudo ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # cleanup apt mess
 RUN   apt-get purge -y man-db && apt-get clean \
@@ -98,14 +98,17 @@ RUN   apt-get purge -y man-db && apt-get clean \
 # fatal: detected dubious ownership in repository at '/git'
 RUN   git config --global --add safe.directory /git
 
-RUN   chown -R 1001:1001 /home/vsts
-USER  1001
-WORKDIR /home/vsts
+#RUN   chown -R 1001:1001 /home/vsts
+#USER  1001
+#WORKDIR /home/vsts
 
 RUN   ansible-galaxy collection install -r ~/ansible_collections.yml
 RUN   packer plugins install "github.com/hashicorp/amazon" ${PACKER_AMAZON_VERSION} && \
       packer plugins install "github.com/hashicorp/ansible" ${PACKER_ANSIBLE_VERSION}
 RUN   terraform init
+RUN   mkdir -p /root/tf_provider_mirror
+RUN   terraform providers mirror /root/tf_provider_mirror
+COPY  .terraformrc /root/
 
 # No ENTRYPOINT
 ENTRYPOINT []
