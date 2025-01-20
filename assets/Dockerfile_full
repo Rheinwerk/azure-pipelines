@@ -13,9 +13,9 @@ ARG   ANSIBLE_VERSION \
       TFLINT_VERSION \
       YQ_VERSION
 
-RUN   useradd -m -u 1001 -d /home/vsts vsts_VSTSContainer && \
-      groupadd azure_pipelines_sudo && \
-      usermod -a -G azure_pipelines_sudo vsts_VSTSContainer
+RUN   useradd -m -u 1001 -d /home/vsts vsts_VSTSContainer
+#      groupadd azure_pipelines_sudo && \
+#      usermod -a -G azure_pipelines_sudo vsts_VSTSContainer
 
 COPY  .terraform.lock.hcl ansible_collections.yml provider.tf /home/vsts/
 
