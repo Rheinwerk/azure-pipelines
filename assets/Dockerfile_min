@@ -13,8 +13,8 @@ ARG   ANSIBLE_VERSION \
       TFLINT_VERSION \
       YQ_VERSION
 
-RUN   mkdir -p /home/vsts/
-COPY  .terraform.lock.hcl ansible_collections.yml provider.tf root/
+RUN   groupadd -g 1000 admin && useradd -u 1000 -g 1000 -s /bin/bash -d /home/admin admin
+COPY  .terraform.lock.hcl ansible_collections.yml provider.tf /home/admin/
 
 # Install dependencies.
 RUN   apt-get update \
@@ -86,12 +86,19 @@ RUN   apt-get purge -y man-db && apt-get clean \
             /usr/share/locale/*
 
 # fatal: detected dubious ownership in repository at '/home/vsts/'
-RUN   git config --global --add safe.directory /home/vsts/
+RUN   git config --global --add safe.directory /home/admin/
 
+# User stuff
+RUN     chown -R 1000:1000 /home/admin
+USER    admin
+WORKDIR /home/admin
 RUN   ansible-galaxy collection install -r ~/ansible_collections.yml
 RUN   packer plugins install "github.com/hashicorp/amazon" ${PACKER_AMAZON_VERSION} && \
       packer plugins install "github.com/hashicorp/ansible" ${PACKER_ANSIBLE_VERSION}
 RUN   terraform init
+RUN   mkdir -p /home/admin/tf_provider_mirror
+RUN   terraform providers mirror /home/admin/tf_provider_mirror
+COPY  .terraformrc /home/admin/
 
 # No ENTRYPOINT
 ENTRYPOINT []

@@ -106,9 +106,9 @@ RUN   ansible-galaxy collection install -r ~/ansible_collections.yml
 RUN   packer plugins install "github.com/hashicorp/amazon" ${PACKER_AMAZON_VERSION} && \
       packer plugins install "github.com/hashicorp/ansible" ${PACKER_ANSIBLE_VERSION}
 RUN   terraform init
-RUN   mkdir -p /home/vsts_VSTSContainer/tf_provider_mirror
-RUN   terraform providers mirror /home/vsts_VSTSContainer/tf_provider_mirror
-COPY  .terraformrc /home/vsts_VSTSContainer/
+RUN   mkdir -p /home/admin/tf_provider_mirror
+RUN   terraform providers mirror /home/admin/tf_provider_mirror
+COPY  .terraformrc /home/admin/
 
 # No ENTRYPOINT
 ENTRYPOINT []
